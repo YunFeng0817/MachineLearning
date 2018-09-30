@@ -36,7 +36,7 @@ def analytical(x, y, Lambda):
     if Lambda == '':
         return (x.T*x).I*x.T*y
     else:
-        return (x.T*x + Lambda).I*x.T*y
+        return (x.T*x + Lambda * identity(DEGREE+1)).I*x.T*y
 
 
 def grandient_descent(x, y, min_step_length, max_iteration, gamma, Lambda):
@@ -75,6 +75,28 @@ def grandient_descent(x, y, min_step_length, max_iteration, gamma, Lambda):
     return theta
 
 
+def conjugation_gradient(x, y, min_step_length, Lambda):
+    if Lambda == '':
+        A = x.T * x
+    else:
+        A = x.T * x + Lambda*identity(DEGREE+1)
+    b = x.T * y
+    theta = mat(zeros(DEGREE+1)).reshape(DEGREE+1, 1)
+
+    r = b - A * theta
+    p = r
+    for i in range(DEGREE+1):
+        a = (r.T * r)/(p.T*A*p)
+        theta = theta + multiply(a, p)
+        r_new = r - multiply(a, A*p)
+        if r.T*r < min_step_length:
+            break
+        beta = (r_new.T * r_new)/(r.T*r)
+        p = r_new + multiply(beta, p)
+        r = r_new
+    return theta
+
+
 def plot(x1, y1, x2, theta):
     """
     paint the plot
@@ -110,8 +132,9 @@ Y = generateY(x, NOISE_MEAN, NOISE_VARIANCE).reshape(x.size, 1)
 
 # theta = analytical(X, Y, '')
 # theta = analytical(X, Y, LAMBDA)
-theta = grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, '')
+# theta = grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, '')
 # theta = grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, LAMBDA)
-
+# theta = conjugation_gradient(X, Y, MIN_STEP_LENGTH, '')
+theta = conjugation_gradient(X, Y, MIN_STEP_LENGTH, LAMBDA)
 
 plot(x, Y, arange(START, END, RESULT_STEP), theta)
