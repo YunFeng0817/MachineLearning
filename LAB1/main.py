@@ -39,6 +39,10 @@ def analytical(x, y, Lambda):
         return (x.T*x + Lambda * identity(DEGREE+1)).I*x.T*y
 
 
+def loss(x, y, theta):
+    return 0.5*(x*theta[0]-y).T*(x*theta[0]-y)
+
+
 def grandient_descent(x, y, min_step_length, max_iteration, gamma, Lambda):
     """
     gradient descent solution
@@ -97,7 +101,7 @@ def conjugation_gradient(x, y, min_step_length, Lambda):
     return theta
 
 
-def plot(x1, y1, x2, theta):
+def plot(x1, y1, x2, theta, legend, xlabel, ylabel, title):
     """
     paint the plot
 
@@ -106,35 +110,61 @@ def plot(x1, y1, x2, theta):
         y1: origin data y
         x2: fit function x
         theta : ploynormial fit function's parameter
+        legend : a list of every line's meaning
+        xlabel : xlabel's meaning
+        ylabel : ylabel's meaning
+        title : the title of the plot
     """
     fig1 = plt.figure('fig1')
     plt.plot(x1, y1)
-    X = generateX(x2, theta.size-1)
-    plt.plot(x2, X @ theta)
+    for i in theta:
+        X = generateX(x2, i.size-1)
+        plt.plot(x2, X @ i)
+    plt.legend(legend)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
     plt.show(fig1)
 
 
-DEGREE = 10
+DEGREE = 30
 START = -1  # origin data left interval
 END = 1  # origin data right interval
-ORIGIN_STEP = 0.04  # origin data step
+TRAIN_STEP = 0.02  # train data set step
+VALID_STEP = 0.04  # valid data set step
 RESULT_STEP = 0.001  # step length for  painting the fit result
 MAX_ITERATION = 1e9  # parameter for gradient descent
 MIN_STEP_LENGTH = 1e-9  # parameter for gradient descent
 NOISE_MEAN = 0
 NOISE_VARIANCE = 0.1
 GAMMA = 1e-2
-LAMBDA = 0.1  # regular term parameter
-x = arange(START, END, ORIGIN_STEP)
+LAMBDA = 10  # regular term parameter
+
+theta = []
+legend = ['source data']
+# for i in range(1, 4):
+#     DEGREE = i
+#     x = arange(START, END, TRAIN_STEP)
+#     X = generateX(x, DEGREE)
+#     Y = generateY(x, NOISE_MEAN, NOISE_VARIANCE).reshape(x.size, 1)
+#     theta.append(analytical(X, Y, ''))
+#     legend.append('Degree : ' + str(i))
+legend.append('fit result')
+
+# train
+x = arange(START, END, TRAIN_STEP)
 X = generateX(x, DEGREE)
 Y = generateY(x, NOISE_MEAN, NOISE_VARIANCE).reshape(x.size, 1)
-
-
-# theta = analytical(X, Y, '')
-# theta = analytical(X, Y, LAMBDA)
-# theta = grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, '')
-# theta = grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, LAMBDA)
-# theta = conjugation_gradient(X, Y, MIN_STEP_LENGTH, '')
-theta = conjugation_gradient(X, Y, MIN_STEP_LENGTH, LAMBDA)
-
-plot(x, Y, arange(START, END, RESULT_STEP), theta)
+theta = [analytical(X, Y, '')] # analytical solution without regular term
+theta = [analytical(X, Y, LAMBDA)] # analytical solution with regular term
+theta = [grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, '')] # gradient descent solution without regular term
+theta = [grandient_descent(X, Y, MIN_STEP_LENGTH, MAX_ITERATION, GAMMA, LAMBDA)] # gradient descent solution with regular term
+theta = [conjugation_gradient(X, Y, MIN_STEP_LENGTH, '')] # conjugate gradient solution without regular term
+theta = [conjugation_gradient(X, Y, MIN_STEP_LENGTH, LAMBDA)] # conjugate gradient solution with regular term
+# validation
+x = arange(START, END, VALID_STEP)
+X = generateX(x, DEGREE)
+Y = generateY(x, NOISE_MEAN, NOISE_VARIANCE).reshape(x.size, 1)
+loss = float(loss(X, Y, theta))
+plot(x, Y, arange(START, END, RESULT_STEP), theta,
+     legend, 'x', 'y', 'loss : '+str(loss))
