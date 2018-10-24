@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import math
 
 DEGREE = 2  # the degree of the X
-DENSITY = 50  # number of the generated data
+DENSITY = 10  # number of the generated data
 type1_mean = 0  # mean of type1's data
-type2_mean = 1  # mean of type2's data
-type1_variance = 0.5  # variance of type1's data
-type2_variance = 0.5  # variance of type2's data
+type2_mean = 50  # mean of type2's data
+type1_variance = 20  # variance of type1's data
+type2_variance = 20  # variance of type2's data
 
 
 def generate_data():
@@ -51,20 +51,9 @@ def Gradient(X, Y, w):
     '''
     compute the gradient in current position according the w,X,Y
     '''
-    result = mat(zeros(DEGREE+1)).reshape(DEGREE+1, 1)
-    for i in range(DEGREE+1):
-        sum = 0
-        for j in range(DENSITY):
-            x = w[0, 0]
-            x += (w[1::].T) * (X[j, :].T)
-            x = exp(x)
-            x = 1 - 1/(1 + x)
-            if i == 0:
-                sum += Y[j]-x
-            else:
-                sum += X[j, i-1] * (Y[j]-x)
-        result[i] = sum
-    return result
+    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
+    newX = c_[Ones, X]
+    return newX.T * (Y-possible(X, w))
 
 
 def gradient_discent(X, Y):
@@ -75,8 +64,8 @@ def gradient_discent(X, Y):
     step = 1
     i = 0
     min_step_length = 1e-3
-    max_iteration = 5000
-    gamma = 1e-1
+    max_iteration = 1e5
+    gamma = 1e-3
     while ((step > min_step_length) and (i < max_iteration)):
         prev_position = w
         w = w + gamma * Gradient(X, Y, w)
@@ -86,8 +75,47 @@ def gradient_discent(X, Y):
     return w
 
 
+def possible(X, w):
+    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
+    newX = c_[Ones, X]
+    x = newX * w
+    x = exp(x)
+    return 1-1/(1+x)
+
+
+def newton_item(X, Y, w):
+    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
+    newX = c_[Ones, X]
+    x1 = newX.T
+    possible_result = possible(X, w)
+    temp = multiply(possible_result, possible_result-1)
+    x2 = multiply(newX, temp)
+    hessian = x1*x2
+    return hessian.I*Gradient(X, Y, w)
+
+
+def newton(X, Y):
+    '''
+    use newton method to compute the logistic regression
+    '''
+    w = mat(zeros(DEGREE+1)).reshape(DEGREE+1, 1)
+    step = 1
+    i = 0
+    min_step_length = 1e-3
+    max_iteration = 5000
+    gamma = 1e-1
+    while ((step > min_step_length) and (i < max_iteration)):
+        prev_position = w
+        w = w + gamma * newton_item(X, Y, w)
+        step = (w - prev_position).T*(w - prev_position)
+        i = i + 1
+    print(w, i)
+    return w
+
+
 data = generate_data()
 X = data[0]
 Y = data[1]
-w = gradient_discent(X, Y)
+w = newton(X, Y)
+# w = gradient_discent(X, Y)
 plot(X, w)
