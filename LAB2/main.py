@@ -46,10 +46,30 @@ def plot(X, w, **kwargs):
     w = w.tolist()
     y = -(w[0]+w[1]*x)/w[2]
     plt.plot(x, y)
-    plt.title(kwargs['title'])
+    plt.title(kwargs['title']+'  ' + kwargs['text'])
     plt.xlabel('Degree 1')
     plt.ylabel('Degree 2')
     plt.draw()
+
+
+def possible(X, w):
+    '''
+    compute the possibility of the P(Yi=1|Xi,w)
+    '''
+    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
+    newX = c_[Ones, X]
+    x = newX * w
+    x = exp(x)
+    return 1-1/(1+x)
+
+
+def accuracy(X, Y, w):
+    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
+    newX = c_[Ones, X]
+    result = newX*w
+    result[where(result >= 0)] = 1
+    result[where(result < 0)] = 0
+    return 1-sum(logical_xor(Y, result))/DENSITY
 
 
 def Gradient(X, Y, w):
@@ -83,17 +103,6 @@ def gradient_descent(X, Y, reg):
         i = i + 1
     print(w, i)
     return w
-
-
-def possible(X, w):
-    '''
-    compute the possibility of the P(Yi=1|Xi,w)
-    '''
-    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
-    newX = c_[Ones, X]
-    x = newX * w
-    x = exp(x)
-    return 1-1/(1+x)
 
 
 def newton_item(X, Y, w, reg):
@@ -146,11 +155,15 @@ data = generate_data()
 X = data[0]
 Y = data[1]
 w = gradient_descent(X, Y, False)
-plot(X, w, figure=1, title='gradient descent without regular term')
+plot(X, w, figure=1, title='gradient descent without regular term',
+     text='accuracy = '+str(accuracy(X, Y, w)))
 w = gradient_descent(X, Y, True)
-plot(X, w, figure=2, title='gradient descent with regular term')
+plot(X, w, figure=2, title='gradient descent with regular term',
+     text='accuracy = '+str(accuracy(X, Y, w)))
 w = newton(X, Y, False)
-plot(X, w, figure=3, title='newton method without regular term')
+plot(X, w, figure=3, title='newton method without regular term',
+     text='accuracy = '+str(accuracy(X, Y, w)))
 w = newton(X, Y, True)
-plot(X, w, figure=4, title='newton method with regular term')
+plot(X, w, figure=4, title='newton method with regular term',
+     text='accuracy = '+str(accuracy(X, Y, w)))
 plt.show()
