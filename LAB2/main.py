@@ -81,13 +81,13 @@ def Gradient(X, Y, w):
     return newX.T * (Y-possible(X, w))
 
 
-def gradient_descent(X, Y, reg):
+def gradient_ascent(X, Y, reg):
     '''
-    use gradient descent method to compute the logistic regression
+    use gradient ascent method to compute the logistic regression
     if reg is false :
-        use gradient descent without regular term
+        use gradient ascent without regular term
     if reg is true :
-        use gradient descent with regular term
+        use gradient ascent with regular term
     '''
     w = mat(zeros(DEGREE+1)).reshape(DEGREE+1, 1)
     step = 1
@@ -154,11 +154,11 @@ def newton(X, Y, reg):
 data = generate_data()
 X = data[0]
 Y = data[1]
-w = gradient_descent(X, Y, False)
-plot(X, w, figure=1, title='gradient descent without regular term',
+w = gradient_ascent(X, Y, False)
+plot(X, w, figure=1, title='gradient ascent without regular term',
      text='accuracy = '+str(accuracy(X, Y, w)))
-w = gradient_descent(X, Y, True)
-plot(X, w, figure=2, title='gradient descent with regular term',
+w = gradient_ascent(X, Y, True)
+plot(X, w, figure=2, title='gradient ascent with regular term',
      text='accuracy = '+str(accuracy(X, Y, w)))
 w = newton(X, Y, False)
 plot(X, w, figure=3, title='newton method without regular term',
