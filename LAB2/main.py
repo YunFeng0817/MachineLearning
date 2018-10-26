@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import math
 
 DEGREE = 2  # the degree of the X
-DENSITY = 500  # number of the generated data
+DENSITY = 200  # number of the generated data
 type1_mean = 0  # mean of type1's data
 type2_mean = 10  # mean of type2's data
-type1_variance = 8  # variance of type1's data
-type2_variance = 8  # variance of type2's data
+type1_variance = 5  # variance of type1's data
+type2_variance = 5  # variance of type2's data
 
 
 def generate_data(scale):
@@ -98,7 +98,7 @@ def gradient_ascent(X, Y, reg):
     min_step_length = 1e-3
     max_iteration = 1e3
     gamma = 1e-3
-    Lambda = -5
+    Lambda = -1
     while ((step > min_step_length) and (i < max_iteration)):
         prev_position = w
         w = w + gamma * Gradient(X, Y, w) - gamma*Lambda*reg*w
@@ -117,7 +117,7 @@ def newton_item(X, Y, w, reg):
     if reg is true :
         use newton method with regular term
     '''
-    Lambda = -5
+    Lambda = -1
     Ones = mat(ones(X.shape[0])).reshape(
         X.shape[0], 1)  # to be easier to process w0
     newX = c_[Ones, X]
@@ -165,7 +165,7 @@ def ucitest():
     test_Y = []
     train_num = 0
     test_num = 0
-    with open('ucidata.txt', 'r') as f:
+    with open('LAB2/ucidata.txt', 'r') as f:
         lines = f.read().split('\n')
         count = 0
         for line in lines:
