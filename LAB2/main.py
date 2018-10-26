@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 import math
 
 DEGREE = 2  # the degree of the X
-DENSITY = 100  # number of the generated data
+DENSITY = 500  # number of the generated data
 type1_mean = 0  # mean of type1's data
 type2_mean = 10  # mean of type2's data
-type1_variance = 5  # variance of type1's data
-type2_variance = 5  # variance of type2's data
+type1_variance = 8  # variance of type1's data
+type2_variance = 8  # variance of type2's data
 
 
-def generate_data():
+def generate_data(scale):
     '''
     use gassus distribution to generate data
     hypothesis:
@@ -21,12 +21,12 @@ def generate_data():
     X = []
     Y = []
     for i in range(1, DEGREE+1):
-        X.extend(rd.normal(type1_mean, type1_variance, int(DENSITY/2)))
-        X.extend(rd.normal(type2_mean, type2_variance, int(DENSITY/2)))
-    Y.extend(zeros(int(DENSITY/2)))
-    Y.extend(ones(int(DENSITY/2)))
-    X = mat(X).reshape(DEGREE, DENSITY).T
-    Y = mat(Y).reshape(DENSITY, 1)
+        X.extend(rd.normal(type1_mean, type1_variance, int(scale/2)))
+        X.extend(rd.normal(type2_mean, type2_variance, int(scale/2)))
+    Y.extend(zeros(int(scale/2)))
+    Y.extend(ones(int(scale/2)))
+    X = mat(X).reshape(DEGREE, scale).T
+    Y = mat(Y).reshape(scale, 1)
     return (X, Y)
 
 
@@ -64,12 +64,13 @@ def possible(X, w):
 
 
 def accuracy(X, Y, w):
-    Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
+    Ones = mat(ones(X.shape[0])).reshape(
+        X.shape[0], 1)  # to be easier to process w0
     newX = c_[Ones, X]
     result = newX*w
     result[where(result >= 0)] = 1
     result[where(result < 0)] = 0
-    return 1-sum(logical_xor(Y, result))/DENSITY
+    return 1-sum(logical_xor(Y, result))/X.shape[0]
 
 
 def Gradient(X, Y, w):
@@ -92,10 +93,10 @@ def gradient_ascent(X, Y, reg):
     w = mat(zeros(DEGREE+1)).reshape(DEGREE+1, 1)
     step = 1
     i = 0
-    min_step_length = 1e-4
-    max_iteration = 1e5
+    min_step_length = 1e-3
+    max_iteration = 1e3
     gamma = 1e-3
-    Lambda = 1
+    Lambda = -5
     while ((step > min_step_length) and (i < max_iteration)):
         prev_position = w
         w = w + gamma * Gradient(X, Y, w) - gamma*Lambda*reg*w
@@ -114,7 +115,7 @@ def newton_item(X, Y, w, reg):
     if reg is true :
         use newton method with regular term
     '''
-    Lambda = 1
+    Lambda = -5
     Ones = mat(ones(DENSITY)).reshape(DENSITY, 1)  # to be easier to process w0
     newX = c_[Ones, X]
     possible_result = possible(X, w)
@@ -150,20 +151,29 @@ def newton(X, Y, reg):
     print(w, i)
     return w
 
+# generate the data for training
+train_data = generate_data(DENSITY)
+train_X = train_data[0]
+train_Y = train_data[1]
+# generate the the data for test
+test_data = generate_data(int(0.4*DENSITY))
+test_X = test_data[0]
+test_Y = test_data[1]
 
-data = generate_data()
-X = data[0]
-Y = data[1]
-w = gradient_ascent(X, Y, False)
-plot(X, w, figure=1, title='gradient ascent without regular term',
-     text='accuracy = '+str(accuracy(X, Y, w)))
-w = gradient_ascent(X, Y, True)
-plot(X, w, figure=2, title='gradient ascent with regular term',
-     text='accuracy = '+str(accuracy(X, Y, w)))
-w = newton(X, Y, False)
-plot(X, w, figure=3, title='newton method without regular term',
-     text='accuracy = '+str(accuracy(X, Y, w)))
-w = newton(X, Y, True)
-plot(X, w, figure=4, title='newton method with regular term',
-     text='accuracy = '+str(accuracy(X, Y, w)))
+w = gradient_ascent(train_X, train_Y, False)
+plot(train_X, w, figure=1, title='gradient ascent without regular term',
+     text='accuracy = '+str(accuracy(test_X, test_Y, w)))
+
+w = gradient_ascent(train_X, train_Y, True)
+plot(train_X, w, figure=2, title='gradient ascent with regular term',
+     text='accuracy = '+str(accuracy(test_X, test_Y, w)))
+
+w = newton(train_X, train_Y, False)
+plot(train_X, w, figure=3, title='newton method without regular term',
+     text='accuracy = '+str(accuracy(test_X, test_Y, w)))
+
+w = newton(train_X, train_Y, True)
+plot(train_X, w, figure=4, title='newton method with regular term',
+     text='accuracy = '+str(accuracy(test_X, test_Y, w)))
+     
 plt.show()
