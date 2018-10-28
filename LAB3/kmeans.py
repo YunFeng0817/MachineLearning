@@ -5,14 +5,24 @@ import math
 
 # data property
 FEATURE = 2
-SAMPLE = 10
-DATA_CENTER = 2
-CLUSTER_MEAN = [[20, 40], [70, 10]]
-CLUSTER_STD = [1, 2]
+SAMPLE = 1000
+DATA_CENTER = 4
+CLUSTER_MEAN = [
+    [100, 10],
+    [200, 300],
+    [50, 400],
+    [300, 500]
+]
+CLUSTER_STD = [
+    [20, 10],
+    [30, 30],
+    [10, 10],
+    [90, 50]
+]
 
 # algorithm property
-CENTER = 2
-max_iteration = 100
+CENTER = DATA_CENTER
+max_iteration = int(1e5)
 init_num = 10
 
 
@@ -21,7 +31,7 @@ def generate_data(feature, sample, center, cluster_mean, cluster_std):
     for f in range(feature):
         for c in range(center):
             X.extend(rd.normal(cluster_mean[c][f],
-                               cluster_std[c], int(sample/center)))
+                               cluster_std[c][f], int(sample/center)))
     X = mat(X).reshape(feature, sample).T
     return X
 
@@ -60,13 +70,34 @@ def kmeans(X, center, max_iteration):
         for c in range(center):
             cluster_points = X[where(cluster == c), :][0]
             for f in range(feature):
-                center_vector[c, f] = sum(cluster_points[:, f])/center
+                center_vector[c, f] = sum(
+                    cluster_points[:, f])/cluster_points.shape[0]
 
         # if the center vector doesn't change during this iteration,stop iterate
         if all(pre_center - center_vector) == 0:
             break
-    return (center_vector, cluster)
+    cluster_num = []
+    for c in range(center):
+        cluster_num.append(X[where(cluster == c), :][0].shape[0])
+    return (center_vector, cluster, cluster_num)
+
+
+def my_plot(X, center_vector, cluster, **kwargs):
+    center = center_vector.shape[0]
+    if 'figure' in kwargs:
+        plt.figure(kwargs['figure'])
+    else:
+        plt.figure(1)
+    for c in range(center):
+        cluster_points = X[where(cluster == c), :][0]
+        plt.scatter(cluster_points[:, 0].tolist(),
+                    cluster_points[:, 1].tolist())
+        plt.scatter(center_vector[c, 0].tolist(), center_vector[c, 1].tolist())
+    plt.draw()
 
 
 X = generate_data(FEATURE, SAMPLE, CENTER, CLUSTER_MEAN, CLUSTER_STD)
-kmeans(X, CENTER, max_iteration)
+result = kmeans(X, CENTER, max_iteration)
+my_plot(X, result[0], result[1])
+print(result[2])
+plt.show()
