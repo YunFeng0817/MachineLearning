@@ -62,7 +62,7 @@ def grandient_descent(x, y, min_step_length, max_iteration, gamma, Lambda):
             y : origin data y
             lamda : regular term parameter; if lamda is '',means without regular term
         """
-        if Ｌambda == '':
+        if Lambda == '':
             return x.T * x * theta - x.T * y
         else:
             return x.T * x * theta - x.T * y+Lambda*theta
