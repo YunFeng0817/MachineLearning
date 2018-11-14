@@ -1,6 +1,7 @@
 from numpy import *
 import numpy.random as rd
 import matplotlib.pyplot as plt
+import generate_data
 import math
 
 # data property
@@ -24,16 +25,6 @@ CLUSTER_STD = [
 CENTER = DATA_CENTER
 max_iteration = int(1e5)
 init_num = 10
-
-
-def generate_data(feature, sample, center, cluster_mean, cluster_std):
-    X = []
-    for f in range(feature):
-        for c in range(center):
-            X.extend(rd.normal(cluster_mean[c][f],
-                               cluster_std[c][f], int(sample/center)))
-    X = mat(X).reshape(feature, sample).T
-    return X
 
 
 def get_distance(x, y):
@@ -88,6 +79,13 @@ def my_plot(X, center_vector, cluster, **kwargs):
         plt.figure(kwargs['figure'])
     else:
         plt.figure(1)
+    plt.subplot(1, 2, 1)
+    count = 0
+    for c in range(center):
+        plt.scatter(X[count:int(count+X.shape[0]/center), 0].tolist(),
+                    X[count:int(count+X.shape[0]/center), 1].tolist())
+        count += int(X.shape[0]/center)
+    plt.subplot(1, 2, 2)
     for c in range(center):
         cluster_points = X[where(cluster == c), :][0]
         plt.scatter(cluster_points[:, 0].tolist(),
@@ -96,8 +94,11 @@ def my_plot(X, center_vector, cluster, **kwargs):
     plt.draw()
 
 
-X = generate_data(FEATURE, SAMPLE, CENTER, CLUSTER_MEAN, CLUSTER_STD)
-result = kmeans(X, CENTER, max_iteration)
-my_plot(X, result[0], result[1])
-print(result[2])
-plt.show()
+if __name__ == "__main__":
+    X = generate_data.generate_data(
+        FEATURE, SAMPLE, CENTER, CLUSTER_MEAN, CLUSTER_STD)
+    result = kmeans(X, CENTER, max_iteration)
+    my_plot(X, result[0], result[1])
+    print(result[0])
+    print(result[2])
+    plt.show()
