@@ -28,6 +28,13 @@ X = generate_data.generate_data(
 
 
 def GaussPossible(X, U, conv, k, n):
+    """
+    X: the original data
+    U: the parameter in EM algorithm , represent the mean value
+    conv: the parameter in EM algorith, represent the covariance matrix
+    k: represent the number of clusters
+    n: represent the nth sample in data X
+    """
     conv = mat(conv)
     degree = X.shape[0]
     conv_value = linalg.det(conv)
@@ -35,13 +42,16 @@ def GaussPossible(X, U, conv, k, n):
 
 
 def GMM(K, X):
+    """
+    K: represent the number of clusters
+    X: the original data
+    """
     # init the w
     ERROR = 1e-2
     w = mat(ones(K)).reshape(K, 1)
     w = w/sum(w)
     U = mat(rd.randint(int(X.min()), int(X.max()),
                        K*X.shape[0])).reshape(K, X.shape[0])
-
     conv = [0]*K
     log_likehood = mat(zeros(X.shape[1])).reshape(X.shape[1], 1)
     old_likehood = mat(ones(X.shape[1])).reshape(X.shape[1], 1)
@@ -83,5 +93,5 @@ def GMM(K, X):
 
 
 result = GMM(DATA_CENTER, X.T)
-my_plot(X, result[0], result[1])
+my_plot(X, result[0], result[1]) # use the plot function in kmeans.py
 plt.show()

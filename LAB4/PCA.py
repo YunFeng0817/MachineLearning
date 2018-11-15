@@ -41,19 +41,19 @@ VARIANCE = [10, 15, 0.1]
 plt.figure(1)
 X = generate_data(FEATURE, SAMPLE, MEAN, VARIANCE)
 ax = plt.subplot(1, 3, 1, projection='3d')  # create a 3d project
-ax.scatter(X[:, 0].tolist(), X[:, 1].tolist(), X[:, 2].tolist())
+ax.scatter(X[:, 0].tolist(), X[:, 1].tolist(), X[:, 2].tolist()) # draw original data
 ax.set_xlim(X.min(), X.max())
 ax.set_ylim(X.min(), X.max())
 ax.set_zlim(X.min(), X.max())
 result, main_mat = PCA(X, 2)
 plt.subplot(1, 3, 2)
-plt.axis([result.min(), result.max(), result.min(), result.max()])
+plt.axis([result.min(), result.max(), result.min(), result.max()]) # draw processed data
 plt.scatter(result[:, 0].tolist(), result[:, 1].tolist())
 ax = plt.subplot(1, 3, 3, projection='3d')
 restore = result*main_mat
-ax.scatter(restore[:, 0].tolist(), restore[:,1].tolist(), restore[:, 2].tolist())
+ax.scatter(restore[:, 0].tolist(), restore[:,1].tolist(), restore[:, 2].tolist()) # draw restored data
 
-# 读取trainingMat
+# read trainingMat
 filename = './LAB4/train-images.idx3-ubyte'
 binfile = open(filename, 'rb')
 buf = binfile.read()
@@ -62,7 +62,7 @@ index = 0
 magic, numImages, numRows, numColumns = struct.unpack_from('>IIII', buf, index)
 index += struct.calcsize('>IIII')
 
-# 读取labels
+# read labels
 filename1 = './LAB4/train-labels.idx1-ubyte'
 binfile1 = open(filename1, 'rb')
 buf1 = binfile1.read()
@@ -75,15 +75,16 @@ index1 += struct.calcsize('>II')
 
 # 设置训练数目为2500个
 trainingNumbers = 16
-# 降维后的维度为７个维度　降维后的数据为40维度
+# 降维后的数据为40维度
 K = 1
-# 初始化traingMat
+# init the traingMat
 train_mat = zeros((trainingNumbers, 28*28))
-CHOSEN_NUM = 3
+CHOSEN_NUM = 3  # the specific number to process
 
 plt.figure(2)
 # 获取经过PCA  处理过的traingMat 和 label
 i = 0
+# read train data and draw the image
 while i < trainingNumbers:
     numtemp = struct.unpack_from('1B', buf1, index1)
     label = numtemp[0]
@@ -100,13 +101,14 @@ while i < trainingNumbers:
 
 PCA_mat, main_mat = PCA(train_mat, K)
 
+# draw the train data which has been PAC processed
 for i in range(trainingNumbers):
     im = dot(PCA_mat[i], main_mat)+sum(train_mat, 0)/train_mat.shape[0]
     image = array(im).reshape(28, 28).astype(int)
     plt.subplot(12, 4, i+17)
     plt.imshow(image)
 
-# 读取testMat
+# read test data to testMat
 filename3 = './LAB4/t10k-images.idx3-ubyte'
 binfile3 = open(filename3, 'rb')
 buf3 = binfile3.read()
@@ -116,7 +118,7 @@ magic3, numImages3, numRows3, numColumns3 = struct.unpack_from(
     '>IIII', buf3, index3)
 index3 += struct.calcsize('>IIII')
 
-# 读取labels
+# read test label
 filename4 = './LAB4/t10k-labels.idx1-ubyte'
 binfile4 = open(filename4, 'rb')
 buf4 = binfile4.read()
@@ -129,6 +131,7 @@ index4 += struct.calcsize('>II')
 test_num = 8
 test_mat = zeros((test_num, 28*28))
 
+# read test data and draw the image
 i = 0
 while i < test_num:
     numtemp = struct.unpack_from('1B', buf4, index4)
@@ -147,6 +150,7 @@ test_normal = test_mat-sum(test_mat, 0)/mat(test_mat).shape[0]
 data = dot(dot(test_normal, main_mat.T), main_mat) + \
     sum(test_mat, 0)/mat(test_mat).shape[0]
 
+# draw the test data which has been PAC processed
 for i in range(test_num):
     image = array(data[i]).reshape(28, 28).astype(int)
     plt.subplot(12, 4, i+41)

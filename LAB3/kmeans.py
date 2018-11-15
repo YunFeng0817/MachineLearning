@@ -74,17 +74,25 @@ def kmeans(X, center, max_iteration):
 
 
 def my_plot(X, center_vector, cluster, **kwargs):
+    """
+    X: the original data
+    center_vector: the vector of the center point of each cluster
+    cluster: vector means which cluster the sample X[n,:] belong to
+    kwargs: figure: the name of the painted figure
+    """
     center = center_vector.shape[0]
     if 'figure' in kwargs:
         plt.figure(kwargs['figure'])
     else:
         plt.figure(1)
+    # draw the standard cluster
     plt.subplot(1, 2, 1)
     count = 0
     for c in range(center):
         plt.scatter(X[count:int(count+X.shape[0]/center), 0].tolist(),
                     X[count:int(count+X.shape[0]/center), 1].tolist())
         count += int(X.shape[0]/center)
+    # draw the cluster result
     plt.subplot(1, 2, 2)
     for c in range(center):
         cluster_points = X[where(cluster == c), :][0]
